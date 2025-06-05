@@ -73,9 +73,17 @@ if current_question < len(questions):
     # Format the questions in bold using Markdown
     st.markdown(f"**{question['question']}**")
 
-    # Display options as radio buttons
-    # Add a non-empty label to the radio button and hide it for accessibility
-    selected_option = st.radio("Bitte wählen Sie eine Option:", [opt[0] for opt in question["options"]], index=None, key=f"question_{current_question}", label_visibility="hidden")
+    # Save the selected option in session state and pre-select it when navigating back
+    if f"selected_option_{current_question}" not in st.session_state:
+        st.session_state[f"selected_option_{current_question}"] = None
+
+    selected_option = st.radio(
+        "Bitte wählen Sie eine Option:",
+        [opt[0] for opt in question["options"]],
+        index=[opt[0] for opt in question["options"]].index(st.session_state[f"selected_option_{current_question}"]) if st.session_state[f"selected_option_{current_question}"] else None,
+        key=f"question_{current_question}",
+        label_visibility="hidden"
+    )
 
     # Navigation buttons
     col1, col2 = st.columns(2)
@@ -89,8 +97,13 @@ if current_question < len(questions):
         if not selected_option:
             st.warning("Bitte wählen Sie eine Antwort aus")
         else:
+            st.session_state[f"selected_option_{current_question}"] = selected_option
             score = next((opt[1] for opt in question["options"] if opt[0] == selected_option), None)
-            st.session_state.scores.append(score)
+            if len(st.session_state.scores) > current_question:
+                st.session_state.scores[current_question] = score
+            else:
+                st.session_state.scores.append(score)
+
             if current_question < len(questions) - 1:
                 st.session_state.current_question += 1
             else:
