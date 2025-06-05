@@ -54,10 +54,10 @@ questions = [
 
 # Recommendations based on score
 recommendations = [
-    (range(5, 8), "Option 1 – Taktische Integration: Minimaler Eingriff auf Projektebene, ideal für Unternehmen mit begrenzten Ressourcen oder ersten Schritten im Nachhaltigkeitsmanagement."),
-    (range(8, 12), "Option 2 – Operative Integration: Hybrides Setup mit Sustainability Epics, passend für Unternehmen, die Nachhaltigkeit stärker operationalisieren wollen, ohne die Organisation komplett umzustellen."),
-    (range(12, 16), "Option 3 – Ökonomische Integration: Nachhaltigkeit wird durch ökonomische Steuerungsmechanismen priorisiert, geeignet für Unternehmen mit ausgeprägter strategischer Nachhaltigkeitsausrichtung."),
-    (range(16, 21), "Option 4 – Systematische Integration: Nachhaltigkeit ist tief in der Organisationsstruktur verankert, ideal für Unternehmen, die eine umfassende Transformation anstreben und langfristige Wirkung erzielen wollen."),
+    (range(5, 8), "**Option 1 – Taktische Integration:** Minimaler Eingriff auf Projektebene, ideal für Unternehmen mit begrenzten Ressourcen oder ersten Schritten im Nachhaltigkeitsmanagement."),
+    (range(8, 12), "**Option 2 – Operative Integration:** Hybrides Setup mit Sustainability Epics, passend für Unternehmen, die Nachhaltigkeit stärker operationalisieren wollen, ohne die Organisation komplett umzustellen."),
+    (range(12, 16), "**Option 3 – Ökonomische Integration:** Nachhaltigkeit wird durch ökonomische Steuerungsmechanismen priorisiert, geeignet für Unternehmen mit ausgeprägter strategischer Nachhaltigkeitsausrichtung."),
+    (range(16, 21), "**Option 4 – Systematische Integration:** Nachhaltigkeit ist tief in der Organisationsstruktur verankert, ideal für Unternehmen, die eine umfassende Transformation anstreben und langfristige Wirkung erzielen wollen."),
 ]
 
 # Session state to track progress and score
@@ -71,8 +71,9 @@ if "quiz_started" not in st.session_state:
     st.session_state.quiz_started = False
 
 if not st.session_state.quiz_started:
-    st.title("Quiz. Welche Integrationsform passt zu Ihrem Unternehmen?")
-    if st.button("Jetzt starten"):
+    st.title("Quiz: Nachhaltigkeit und Agile Transformation (SAFe)")
+    st.subheader("Welche Integrationsform passt zu Ihrem Unternehmen?")
+    if st.button("Quiz starten"):
         st.session_state.quiz_started = True
         st.session_state.current_question = 0
         st.session_state.scores = []
@@ -122,12 +123,66 @@ else:
 
     # Show results if quiz is complete
     if current_question == len(questions):
+        # Add a subtitle to the result page before displaying the results
+        st.subheader("Welche Integrationsform passt zu Ihrem Unternehmen?")
+        
         total_score = sum(st.session_state.scores)
         st.write(f"Ihr Gesamtscore: {total_score}")
         recommendation = next((rec for score_range, rec in recommendations if total_score in score_range), None)
         if recommendation:
             st.write(recommendation)
 
+            # Correct the logic to determine the option number for displaying the image
+            for idx, (score_range, rec_text) in enumerate(recommendations, start=1):
+                if recommendation == rec_text:
+                    option_number = idx
+                    break
+
+            # Display the corresponding image
+            image_path = f"vizzes/option_{option_number}.png"
+            st.image(image_path, use_container_width=True)
+
         # Add a button to restart the quiz
         if st.button("Zurück zur Startseite"):
             st.session_state.quiz_started = False
+
+# Add improved styling for better visual appeal
+st.markdown(
+    """
+    <style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+    .stButton > button {
+        padding: 12px 24px;
+        font-size: 16px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .stButton > button:hover {
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+    }
+    .stRadio > div {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        background-color: #fff;
+        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .stRadio > div:hover {
+        background-color: #f9f9f9;
+    }
+    h1, h2, h3 {
+        font-family: 'Arial', sans-serif;
+        color: #444;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
