@@ -1,7 +1,7 @@
 import streamlit as st
 
 # Title of the quiz
-st.title("Quiz. Welche Integrationsform passt zu Ihrem Unternehmen?")
+# st.title("Quiz. Welche Integrationsform passt zu Ihrem Unternehmen?")
 
 # Questions and scoring logic
 questions = [
@@ -66,53 +66,68 @@ if "current_question" not in st.session_state:
 if "scores" not in st.session_state:
     st.session_state.scores = []
 
-# Prevent IndexError by ensuring current_question does not exceed the number of questions
-current_question = st.session_state.current_question
-if current_question < len(questions):
-    question = questions[current_question]
-    # Format the questions in bold using Markdown
-    st.markdown(f"**{question['question']}**")
+# Add a landing page with a "Jetzt starten" button
+if "quiz_started" not in st.session_state:
+    st.session_state.quiz_started = False
 
-    # Save the selected option in session state and pre-select it when navigating back
-    if f"selected_option_{current_question}" not in st.session_state:
-        st.session_state[f"selected_option_{current_question}"] = None
+if not st.session_state.quiz_started:
+    st.title("Quiz. Welche Integrationsform passt zu Ihrem Unternehmen?")
+    if st.button("Jetzt starten"):
+        st.session_state.quiz_started = True
+        st.session_state.current_question = 0
+        st.session_state.scores = []
+else:
+    # Prevent IndexError by ensuring current_question does not exceed the number of questions
+    current_question = st.session_state.current_question
+    if current_question < len(questions):
+        question = questions[current_question]
+        # Format the questions in bold using Markdown
+        st.markdown(f"**{question['question']}**")
 
-    selected_option = st.radio(
-        "Bitte wählen Sie eine Option:",
-        [opt[0] for opt in question["options"]],
-        index=[opt[0] for opt in question["options"]].index(st.session_state[f"selected_option_{current_question}"]) if st.session_state[f"selected_option_{current_question}"] else None,
-        key=f"question_{current_question}",
-        label_visibility="hidden"
-    )
+        # Save the selected option in session state and pre-select it when navigating back
+        if f"selected_option_{current_question}" not in st.session_state:
+            st.session_state[f"selected_option_{current_question}"] = None
 
-    # Navigation buttons
-    col1, col2 = st.columns(2)
-    # Ensure the "Zurück" button is not displayed on the first question
-    if current_question > 0 and col1.button("Zurück"):
-        st.session_state.current_question -= 1
-        st.session_state.scores.pop()
+        selected_option = st.radio(
+            "Bitte wählen Sie eine Option:",
+            [opt[0] for opt in question["options"]],
+            index=[opt[0] for opt in question["options"]].index(st.session_state[f"selected_option_{current_question}"]) if st.session_state[f"selected_option_{current_question}"] else None,
+            key=f"question_{current_question}",
+            label_visibility="hidden"
+        )
 
-    # Ensure the "Weiter" button properly transitions to the results page
-    if col2.button("Weiter"):
-        if not selected_option:
-            st.warning("Bitte wählen Sie eine Antwort aus")
-        else:
-            st.session_state[f"selected_option_{current_question}"] = selected_option
-            score = next((opt[1] for opt in question["options"] if opt[0] == selected_option), None)
-            if len(st.session_state.scores) > current_question:
-                st.session_state.scores[current_question] = score
+        # Navigation buttons
+        col1, col2 = st.columns(2)
+        # Ensure the "Zurück" button is not displayed on the first question
+        if current_question > 0 and col1.button("Zurück"):
+            st.session_state.current_question -= 1
+            st.session_state.scores.pop()
+
+        # Ensure the "Weiter" button properly transitions to the results page
+        if col2.button("Weiter"):
+            if not selected_option:
+                st.warning("Bitte wählen Sie eine Antwort aus")
             else:
-                st.session_state.scores.append(score)
+                st.session_state[f"selected_option_{current_question}"] = selected_option
+                score = next((opt[1] for opt in question["options"] if opt[0] == selected_option), None)
+                if len(st.session_state.scores) > current_question:
+                    st.session_state.scores[current_question] = score
+                else:
+                    st.session_state.scores.append(score)
 
-            if current_question < len(questions) - 1:
-                st.session_state.current_question += 1
-            else:
-                st.session_state.current_question = len(questions)  # Ensure transition to results
+                if current_question < len(questions) - 1:
+                    st.session_state.current_question += 1
+                else:
+                    st.session_state.current_question = len(questions)  # Ensure transition to results
 
-# Show results if quiz is complete
-if current_question == len(questions):
-    total_score = sum(st.session_state.scores)
-    st.write(f"Ihr Gesamtscore: {total_score}")
-    recommendation = next((rec for score_range, rec in recommendations if total_score in score_range), None)
-    if recommendation:
-        st.write(recommendation)
+    # Show results if quiz is complete
+    if current_question == len(questions):
+        total_score = sum(st.session_state.scores)
+        st.write(f"Ihr Gesamtscore: {total_score}")
+        recommendation = next((rec for score_range, rec in recommendations if total_score in score_range), None)
+        if recommendation:
+            st.write(recommendation)
+
+        # Add a button to restart the quiz
+        if st.button("Zurück zur Startseite"):
+            st.session_state.quiz_started = False
